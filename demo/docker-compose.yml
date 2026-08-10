@@ -1,0 +1,12 @@
+services:
+  warehouse:
+    image: postgres:16
+    container_name: sentinel-warehouse
+    environment:
+      POSTGRES_USER: sentinel
+      POSTGRES_PASSWORD: sentinel
+      POSTGRES_DB: warehouse
+    ports:
+      - "5544:5432"
+    volumes:
+      - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql:ro

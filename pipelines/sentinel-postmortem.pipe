@@ -1,0 +1,115 @@
+{
+  "components": [
+    {
+      "id": "chat_1",
+      "provider": "chat",
+      "name": "Chat",
+      "config": {
+        "hideForm": true,
+        "mode": "Source",
+        "parameters": {},
+        "type": "chat"
+      },
+      "ui": {
+        "position": { "x": 20, "y": 200 },
+        "nodeType": "default",
+        "formDataValid": true
+      }
+    },
+    {
+      "id": "agent_rocketride_1",
+      "provider": "agent_rocketride",
+      "name": "Sentinel Postmortem Agent",
+      "config": {
+        "instructions": [
+          "You are Sentinel's postmortem analyst. Incident reports written by the triage agent live in the file store under incidents/ as markdown files, one per incident, named <UTC timestamp>-<model>.md.",
+          "When asked for a digest or postmortem: list the incidents/ directory with fs.list, read the relevant reports with fs.read (filter by the requested time window using the timestamp in the filename), and synthesize.",
+          "A digest must contain: (1) incident count and affected models, (2) recurring root-cause patterns (e.g. 'three of five incidents were upstream column renames'), (3) the single highest-leverage preventive action, stated concretely.",
+          "For questions about a specific model or incident, quote the recorded root cause and fix verbatim from the report rather than re-deriving them.",
+          "If incidents/ is empty or missing, say so plainly. Never invent incidents."
+        ],
+        "max_waves": 15,
+        "parameters": {}
+      },
+      "ui": {
+        "position": { "x": 260, "y": 200 },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "input": [
+        { "lane": "questions", "from": "chat_1" }
+      ]
+    },
+    {
+      "id": "llm_ollama_1",
+      "provider": "llm_ollama",
+      "name": "Ollama (local)",
+      "config": {
+        "profile": "llama3_1-8b",
+        "llama3_1-8b": {},
+        "parameters": {}
+      },
+      "ui": {
+        "position": { "x": 140, "y": 380 },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "control": [
+        { "classType": "llm", "from": "agent_rocketride_1" }
+      ]
+    },
+    {
+      "id": "memory_internal_1",
+      "provider": "memory_internal",
+      "name": "Memory (Internal)",
+      "config": {
+        "type": "memory_internal"
+      },
+      "ui": {
+        "position": { "x": 320, "y": 380 },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "control": [
+        { "classType": "memory", "from": "agent_rocketride_1" }
+      ]
+    },
+    {
+      "id": "tool_filesystem_1",
+      "provider": "tool_filesystem",
+      "name": "Incident Store",
+      "config": {
+        "type": "tool_filesystem"
+      },
+      "ui": {
+        "position": { "x": 500, "y": 380 },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "control": [
+        { "classType": "tool", "from": "agent_rocketride_1" }
+      ]
+    },
+    {
+      "id": "response_answers_1",
+      "provider": "response_answers",
+      "name": "Return Digest",
+      "config": {
+        "laneName": "answers"
+      },
+      "ui": {
+        "position": { "x": 520, "y": 200 },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "input": [
+        { "lane": "answers", "from": "agent_rocketride_1" }
+      ]
+    }
+  ],
+  "version": 1,
+  "isLocked": false,
+  "snapToGrid": true,
+  "snapGridSize": [10, 10],
+  "docRevision": 1
+}

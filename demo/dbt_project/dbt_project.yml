@@ -1,0 +1,10 @@
+name: sentinel_demo
+version: "1.0.0"
+profile: sentinel_demo
+model-paths: ["models"]
+models:
+  sentinel_demo:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
