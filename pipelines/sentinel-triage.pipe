@@ -86,10 +86,10 @@
       "config": {
         "type": "db_postgres",
         "serverName": "warehouse",
-        "host": "${SENTINEL_PG_HOST}",
-        "database": "${SENTINEL_PG_DB}",
-        "user": "${SENTINEL_PG_USER}",
-        "password": "${SENTINEL_PG_PASSWORD}",
+        "host": "${ROCKETRIDE_PG_HOST}",
+        "database": "${ROCKETRIDE_PG_DB}",
+        "user": "${ROCKETRIDE_PG_USER}",
+        "password": "${ROCKETRIDE_PG_PASSWORD}",
         "parameters": {}
       },
       "ui": {
@@ -171,6 +171,8 @@
       ]
     }
   ],
+  "project_id": "72351f70-81f4-46a9-bb11-dbb107abc28e",
+  "viewport": { "x": 0, "y": 0, "zoom": 1 },
   "version": 1,
   "isLocked": false,
   "snapToGrid": true,

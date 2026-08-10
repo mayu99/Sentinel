@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 PLAYBOOK.md
 .rocketride/
+.claude/settings.local.json
