@@ -11,7 +11,10 @@
         "type": "webhook"
       },
       "ui": {
-        "position": { "x": 20, "y": 200 },
+        "position": {
+          "x": 20,
+          "y": 200
+        },
         "nodeType": "default",
         "formDataValid": true
       }
@@ -25,23 +28,28 @@
           "You are Sentinel, an on-call incident triage agent for data pipelines. You receive a failure event from a dbt or Airflow run as JSON (job name, failed model, error message, log excerpt).",
           "Triage protocol — follow in order:",
           "1. PARSE: Read the failure payload. Identify the failed model, the error class (missing column, type mismatch, constraint violation, timeout, permission), and the exact object names mentioned in the error.",
-          "2. INSPECT SOURCE: Use warehouse.get_schema to fetch the current schema of the upstream table(s) the failed model reads from. Use warehouse.get_data with a SELECT to sample rows or check counts/freshness if relevant.",
+          "2. INSPECT SOURCE: Use postgres.get_schema to fetch the current schema of the upstream table(s) the failed model reads from. Use postgres.get_data with a SELECT to sample rows or check counts/freshness if relevant. (Method names are UNVERIFIED — the db_postgres schema only confirms the 'postgres' prefix, not the method suffixes. Confirm against the actual tool-call schema on first run.)",
           "3. DIAGNOSE DRIFT: Compare what the model's SQL expects (columns named in the error and log excerpt) against the live schema. Use python.execute for any diffing, parsing, or date math. State the root cause as a single falsifiable sentence, e.g. 'Upstream table raw.customers renamed customer_email to email; stg_customers.sql still selects customer_email.'",
           "4. PROPOSE FIX: Write the minimal concrete fix — the exact SQL change or config change — and one guardrail to prevent recurrence (e.g. a dbt source freshness test or a schema contract).",
           "5. RECORD: Write the full incident report as markdown to the file store at incidents/<UTC timestamp>-<model>.md using fs.write.",
-          "6. NOTIFY: If Slack tools are available, post a concise incident summary (root cause + fix, under 120 words) to the channel #data-incidents with slack.message_post. If Slack is not available, skip without failing.",
-          "Always finish by returning the incident report. Never invent schema details — every column claim must come from warehouse.get_schema output. If you cannot determine the root cause, say so and list what you ruled out."
+          "6. NOTIFY: If the Slack webhook tool is available, POST a JSON payload ({\"text\": \"<summary>\"}) containing a concise incident summary (root cause + fix, under 120 words) to the Slack incoming webhook URL using slack.http_request (POST). If the tool is not available, skip without failing.",
+          "Always finish by returning the incident report. Never invent schema details — every column claim must come from postgres.get_schema output. If you cannot determine the root cause, say so and list what you ruled out."
         ],
-        "max_waves": 20,
-        "parameters": {}
+        "max_waves": 20
       },
       "ui": {
-        "position": { "x": 260, "y": 200 },
+        "position": {
+          "x": 260,
+          "y": 200
+        },
         "nodeType": "default",
         "formDataValid": true
       },
       "input": [
-        { "lane": "questions", "from": "webhook_1" }
+        {
+          "lane": "questions",
+          "from": "webhook_1"
+        }
       ]
     },
     {
@@ -50,17 +58,27 @@
       "name": "Ollama (local)",
       "config": {
         "profile": "llama3_1-8b",
-        "llama3_1-8b": {},
-        "parameters": {}
+        "llama3_1-8b": {
+          "serverbase": "http://localhost:11434/v1"
+        }
       },
       "ui": {
-        "position": { "x": 120, "y": 380 },
+        "position": {
+          "x": 120,
+          "y": 380
+        },
         "nodeType": "default",
         "formDataValid": true
       },
       "control": [
-        { "classType": "llm", "from": "agent_rocketride_1" },
-        { "classType": "llm", "from": "db_postgres_1" }
+        {
+          "classType": "llm",
+          "from": "agent_rocketride_1"
+        },
+        {
+          "classType": "llm",
+          "from": "db_postgres_1"
+        }
       ]
     },
     {
@@ -71,12 +89,18 @@
         "type": "memory_internal"
       },
       "ui": {
-        "position": { "x": 300, "y": 380 },
+        "position": {
+          "x": 300,
+          "y": 380
+        },
         "nodeType": "default",
         "formDataValid": true
       },
       "control": [
-        { "classType": "memory", "from": "agent_rocketride_1" }
+        {
+          "classType": "memory",
+          "from": "agent_rocketride_1"
+        }
       ]
     },
     {
@@ -84,21 +108,31 @@
       "provider": "db_postgres",
       "name": "Warehouse (Postgres)",
       "config": {
-        "type": "db_postgres",
-        "serverName": "warehouse",
-        "host": "${ROCKETRIDE_PG_HOST}",
-        "database": "${ROCKETRIDE_PG_DB}",
-        "user": "${ROCKETRIDE_PG_USER}",
-        "password": "${ROCKETRIDE_PG_PASSWORD}",
-        "parameters": {}
+        "profile": "default",
+        "default": {
+          "host": "${ROCKETRIDE_PG_HOST}",
+          "user": "${ROCKETRIDE_PG_USER}",
+          "password": "${ROCKETRIDE_PG_PASSWORD}",
+          "database": "${ROCKETRIDE_PG_DB}",
+          "table": "table",
+          "db_description": "Sentinel data warehouse — upstream source tables read by the dbt/Airflow models under triage.",
+          "max_attempts": 5,
+          "allow_execute": false
+        }
       },
       "ui": {
-        "position": { "x": 480, "y": 380 },
+        "position": {
+          "x": 480,
+          "y": 380
+        },
         "nodeType": "default",
         "formDataValid": true
       },
       "control": [
-        { "classType": "tool", "from": "agent_rocketride_1" }
+        {
+          "classType": "tool",
+          "from": "agent_rocketride_1"
+        }
       ]
     },
     {
@@ -107,17 +141,29 @@
       "name": "Python Sandbox",
       "config": {
         "type": "tool_python",
-        "serverName": "python",
         "timeout": 60,
-        "allowedModules": ["difflib", "textwrap"]
+        "allowedModules": [
+          {
+            "moduleName": "difflib"
+          },
+          {
+            "moduleName": "textwrap"
+          }
+        ]
       },
       "ui": {
-        "position": { "x": 660, "y": 380 },
+        "position": {
+          "x": 660,
+          "y": 380
+        },
         "nodeType": "default",
         "formDataValid": true
       },
       "control": [
-        { "classType": "tool", "from": "agent_rocketride_1" }
+        {
+          "classType": "tool",
+          "from": "agent_rocketride_1"
+        }
       ]
     },
     {
@@ -125,33 +171,65 @@
       "provider": "tool_filesystem",
       "name": "Incident Store",
       "config": {
-        "type": "tool_filesystem"
+        "type": "tool_filesystem",
+        "allowRead": true,
+        "allowWrite": true,
+        "allowList": true,
+        "allowMkdir": true,
+        "allowStat": true,
+        "allowDelete": false
       },
       "ui": {
-        "position": { "x": 840, "y": 380 },
+        "position": {
+          "x": 840,
+          "y": 380
+        },
         "nodeType": "default",
         "formDataValid": true
       },
       "control": [
-        { "classType": "tool", "from": "agent_rocketride_1" }
+        {
+          "classType": "tool",
+          "from": "agent_rocketride_1"
+        }
       ]
     },
     {
-      "id": "tool_slack_1",
-      "provider": "tool_slack",
-      "name": "Slack",
+      "id": "tool_http_request_1",
+      "provider": "tool_http_request",
+      "name": "Slack Webhook (HTTP)",
       "config": {
-        "type": "tool_slack",
-        "token": "${ROCKETRIDE_SLACK_TOKEN}",
-        "webhookUrl": ""
+        "type": "tool_http_request",
+        "serverName": "slack",
+        "allowGET": false,
+        "allowPOST": true,
+        "allowPUT": false,
+        "allowPATCH": false,
+        "allowDELETE": false,
+        "allowHEAD": false,
+        "allowOPTIONS": false,
+        "urlWhitelist": [
+          {
+            "whitelistPattern": "^https://hooks\\.slack\\.com/"
+          }
+        ],
+        "rateLimitPerSecond": 10,
+        "rateLimitPerMinute": 100,
+        "maxConcurrentRequests": 5
       },
       "ui": {
-        "position": { "x": 1020, "y": 380 },
+        "position": {
+          "x": 1020,
+          "y": 380
+        },
         "nodeType": "default",
         "formDataValid": true
       },
       "control": [
-        { "classType": "tool", "from": "agent_rocketride_1" }
+        {
+          "classType": "tool",
+          "from": "agent_rocketride_1"
+        }
       ]
     },
     {
@@ -162,20 +240,33 @@
         "laneName": "answers"
       },
       "ui": {
-        "position": { "x": 520, "y": 200 },
+        "position": {
+          "x": 520,
+          "y": 200
+        },
         "nodeType": "default",
         "formDataValid": true
       },
       "input": [
-        { "lane": "answers", "from": "agent_rocketride_1" }
+        {
+          "lane": "answers",
+          "from": "agent_rocketride_1"
+        }
       ]
     }
   ],
   "project_id": "72351f70-81f4-46a9-bb11-dbb107abc28e",
-  "viewport": { "x": 0, "y": 0, "zoom": 1 },
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  },
   "version": 1,
   "isLocked": false,
   "snapToGrid": true,
-  "snapGridSize": [10, 10],
+  "snapGridSize": [
+    10,
+    10
+  ],
   "docRevision": 1
 }

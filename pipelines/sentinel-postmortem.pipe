@@ -11,7 +11,10 @@
         "type": "chat"
       },
       "ui": {
-        "position": { "x": 20, "y": 200 },
+        "position": {
+          "x": 20,
+          "y": 200
+        },
         "nodeType": "default",
         "formDataValid": true
       }
@@ -28,16 +31,21 @@
           "For questions about a specific model or incident, quote the recorded root cause and fix verbatim from the report rather than re-deriving them.",
           "If incidents/ is empty or missing, say so plainly. Never invent incidents."
         ],
-        "max_waves": 15,
-        "parameters": {}
+        "max_waves": 15
       },
       "ui": {
-        "position": { "x": 260, "y": 200 },
+        "position": {
+          "x": 260,
+          "y": 200
+        },
         "nodeType": "default",
         "formDataValid": true
       },
       "input": [
-        { "lane": "questions", "from": "chat_1" }
+        {
+          "lane": "questions",
+          "from": "chat_1"
+        }
       ]
     },
     {
@@ -46,16 +54,23 @@
       "name": "Ollama (local)",
       "config": {
         "profile": "llama3_1-8b",
-        "llama3_1-8b": {},
-        "parameters": {}
+        "llama3_1-8b": {
+          "serverbase": "http://localhost:11434/v1"
+        }
       },
       "ui": {
-        "position": { "x": 140, "y": 380 },
+        "position": {
+          "x": 140,
+          "y": 380
+        },
         "nodeType": "default",
-        "formDataValid": true
+        "formDataValid": false
       },
       "control": [
-        { "classType": "llm", "from": "agent_rocketride_1" }
+        {
+          "classType": "llm",
+          "from": "agent_rocketride_1"
+        }
       ]
     },
     {
@@ -66,12 +81,18 @@
         "type": "memory_internal"
       },
       "ui": {
-        "position": { "x": 320, "y": 380 },
+        "position": {
+          "x": 320,
+          "y": 380
+        },
         "nodeType": "default",
         "formDataValid": true
       },
       "control": [
-        { "classType": "memory", "from": "agent_rocketride_1" }
+        {
+          "classType": "memory",
+          "from": "agent_rocketride_1"
+        }
       ]
     },
     {
@@ -79,15 +100,27 @@
       "provider": "tool_filesystem",
       "name": "Incident Store",
       "config": {
-        "type": "tool_filesystem"
+        "type": "tool_filesystem",
+        "allowRead": true,
+        "allowWrite": true,
+        "allowList": true,
+        "allowMkdir": true,
+        "allowStat": true,
+        "allowDelete": false
       },
       "ui": {
-        "position": { "x": 500, "y": 380 },
+        "position": {
+          "x": 500,
+          "y": 380
+        },
         "nodeType": "default",
-        "formDataValid": true
+        "formDataValid": false
       },
       "control": [
-        { "classType": "tool", "from": "agent_rocketride_1" }
+        {
+          "classType": "tool",
+          "from": "agent_rocketride_1"
+        }
       ]
     },
     {
@@ -98,20 +131,28 @@
         "laneName": "answers"
       },
       "ui": {
-        "position": { "x": 520, "y": 200 },
+        "position": {
+          "x": 520,
+          "y": 200
+        },
         "nodeType": "default",
         "formDataValid": true
       },
       "input": [
-        { "lane": "answers", "from": "agent_rocketride_1" }
+        {
+          "lane": "answers",
+          "from": "agent_rocketride_1"
+        }
       ]
     }
   ],
   "project_id": "f03fba07-1489-4565-8bff-887e1b7c9fd5",
-  "viewport": { "x": 0, "y": 0, "zoom": 1 },
   "version": 1,
   "isLocked": false,
   "snapToGrid": true,
-  "snapGridSize": [10, 10],
-  "docRevision": 1
+  "snapGridSize": [
+    10,
+    10
+  ],
+  "docRevision": 2
 }

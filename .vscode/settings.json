@@ -1,0 +1,4 @@
+{
+    "rocketride.deployment.connectionMode": "cloud",
+    "rocketride.deployment.hostUrl": "https://api.rocketride.ai"
+}
