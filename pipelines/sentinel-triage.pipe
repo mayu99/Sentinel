@@ -12,8 +12,8 @@
       },
       "ui": {
         "position": {
-          "x": 20,
-          "y": 200
+          "x": -70,
+          "y": 170
         },
         "nodeType": "default",
         "formDataValid": true
@@ -24,6 +24,7 @@
       "provider": "agent_rocketride",
       "name": "Sentinel Triage Agent",
       "config": {
+        "agent_description": "Triages failed dbt/Airflow pipeline runs by inspecting live warehouse schema, diagnosing drift, proposing fixes, and recording incident reports.",
         "instructions": [
           "You are Sentinel, an on-call incident triage agent for data pipelines. You receive a failure event from a dbt or Airflow run as JSON (job name, failed model, error message, log excerpt).",
           "Triage protocol — follow in order:",
@@ -35,7 +36,10 @@
           "6. NOTIFY: If the Slack webhook tool is available, POST a JSON payload ({\"text\": \"<summary>\"}) containing a concise incident summary (root cause + fix, under 120 words) to the Slack incoming webhook URL using slack.http_request (POST). If the tool is not available, skip without failing.",
           "Always finish by returning the incident report. Never invent schema details — every column claim must come from postgres.get_schema output. If you cannot determine the root cause, say so and list what you ruled out."
         ],
-        "max_waves": 20
+        "max_waves": 20,
+        "parameters": {
+          "google": {}
+        }
       },
       "ui": {
         "position": {
@@ -65,21 +69,11 @@
       "ui": {
         "position": {
           "x": 120,
-          "y": 380
+          "y": 390
         },
         "nodeType": "default",
         "formDataValid": true
-      },
-      "control": [
-        {
-          "classType": "llm",
-          "from": "agent_rocketride_1"
-        },
-        {
-          "classType": "llm",
-          "from": "db_postgres_1"
-        }
-      ]
+      }
     },
     {
       "id": "memory_internal_1",
@@ -110,14 +104,17 @@
       "config": {
         "profile": "default",
         "default": {
-          "host": "${ROCKETRIDE_PG_HOST}",
-          "user": "${ROCKETRIDE_PG_USER}",
-          "password": "${ROCKETRIDE_PG_PASSWORD}",
+          "allow_execute": true,
           "database": "${ROCKETRIDE_PG_DB}",
-          "table": "table",
           "db_description": "Sentinel data warehouse — upstream source tables read by the dbt/Airflow models under triage.",
+          "host": "${ROCKETRIDE_PG_HOST}",
           "max_attempts": 5,
-          "allow_execute": false
+          "table": "raw.customers",
+          "user": "${ROCKETRIDE_PG_USER}",
+          "password": "${ROCKETRIDE_PG_PASSWORD}"
+        },
+        "parameters": {
+          "google": {}
         }
       },
       "ui": {
@@ -253,14 +250,43 @@
           "from": "agent_rocketride_1"
         }
       ]
+    },
+    {
+      "id": "llm_gemini_1",
+      "provider": "llm_gemini",
+      "name": "Gemini",
+      "config": {
+        "profile": "gemini-2_5-flash",
+        "1-pro-preview": {},
+        "name": "Gemini",
+        "parameters": {
+          "google": {}
+        },
+        "5-flash": {
+          "apikey": "${ROCKETRIDE_GEMINI_KEY}"
+        }
+      },
+      "ui": {
+        "position": {
+          "x": -50,
+          "y": 390
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "control": [
+        {
+          "classType": "llm",
+          "from": "agent_rocketride_1"
+        },
+        {
+          "classType": "llm",
+          "from": "db_postgres_1"
+        }
+      ]
     }
   ],
   "project_id": "72351f70-81f4-46a9-bb11-dbb107abc28e",
-  "viewport": {
-    "x": 0,
-    "y": 0,
-    "zoom": 1
-  },
   "version": 1,
   "isLocked": false,
   "snapToGrid": true,
@@ -268,5 +294,5 @@
     10,
     10
   ],
-  "docRevision": 1
+  "docRevision": 17
 }

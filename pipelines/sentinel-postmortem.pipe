@@ -56,6 +56,9 @@
         "profile": "llama3_1-8b",
         "llama3_1-8b": {
           "serverbase": "http://localhost:11434/v1"
+        },
+        "parameters": {
+          "google": {}
         }
       },
       "ui": {
@@ -64,7 +67,7 @@
           "y": 380
         },
         "nodeType": "default",
-        "formDataValid": false
+        "formDataValid": true
       },
       "control": [
         {
@@ -100,13 +103,17 @@
       "provider": "tool_filesystem",
       "name": "Incident Store",
       "config": {
-        "type": "tool_filesystem",
-        "allowRead": true,
-        "allowWrite": true,
+        "allowDelete": false,
         "allowList": true,
         "allowMkdir": true,
+        "allowRead": true,
         "allowStat": true,
-        "allowDelete": false
+        "allowWrite": true,
+        "pathWhitelist": [],
+        "type": "tool_filesystem",
+        "parameters": {
+          "google": {}
+        }
       },
       "ui": {
         "position": {
@@ -114,7 +121,7 @@
           "y": 380
         },
         "nodeType": "default",
-        "formDataValid": false
+        "formDataValid": true
       },
       "control": [
         {
@@ -154,5 +161,5 @@
     10,
     10
   ],
-  "docRevision": 2
+  "docRevision": 4
 }
