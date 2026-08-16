@@ -42,6 +42,16 @@ Sentinel runs entirely self-hosted: engine, warehouse, and pipelines all local. 
 
 ## Demo
 
+<div align="center">
+
+<a href="https://youtu.be/A4dtzbJncB0">
+  <img src="https://img.youtube.com/vi/A4dtzbJncB0/maxresdefault.jpg" alt="Sentinel demo video" width="720">
+</a>
+
+**Watch the demo:** [https://youtu.be/A4dtzbJncB0](https://youtu.be/A4dtzbJncB0)
+
+</div>
+
 ### The scenario
 
 An upstream team renames `customer_email` to `email` in `public.customers` (and adds `email_verified`). The dbt model `stg_customers.sql` still selects `customer_email`, so the nightly run fails and the downstream model `fct_orders` is skipped. Sentinel receives the failure event and has to work out why &mdash; it is not told.
@@ -211,18 +221,6 @@ Honest framing matters more than a flashy demo:
 3. A trace ingester that persists the WebSocket stream so runs have history.
 4. A console UI over the incident store.
 5. Running the agent against a real warehouse.
-
-## Demo Video
-
-<div align="center">
-
-<a href="https://youtu.be/A4dtzbJncB0">
-  <img src="https://img.youtube.com/vi/A4dtzbJncB0/maxresdefault.jpg" alt="Sentinel demo video" width="720">
-</a>
-
-**Watch the demo:** [https://youtu.be/A4dtzbJncB0](https://youtu.be/A4dtzbJncB0)
-
-</div>
 
 ## Acknowledgements
 
