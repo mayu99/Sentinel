@@ -7,7 +7,7 @@
   "failed_at": "2026-08-09T03:12:41Z",
   "failed_model": "stg_customers",
   "downstream_skipped": ["fct_orders"],
-  "error": "Database Error in model stg_customers (models/staging/stg_customers.sql): column \"customer_email\" does not exist LINE 6:     customer_email, HINT: Perhaps you meant to reference the column \"customers.email\".",
+  "error": "Database Error in model stg_customers (models/staging/stg_customers.sql): column \"customer_email\" does not exist LINE 6:     customer_email,",
   "log_excerpt": [
     "03:12:04  Running with dbt=1.8.2",
     "03:12:05  Found 3 models, 2 sources",
