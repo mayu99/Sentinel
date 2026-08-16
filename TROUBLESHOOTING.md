@@ -69,11 +69,11 @@ One row back, no truncation.
 
 ## 8. Fresh install: RocketRide engine won't start
 
-**Symptom:** A clean install of the RocketRide engine fails to start. This is an upstream packaging bug -- it will hit every fresh install until RocketRide re-pins the dependency.
+**Symptom:** A clean install of the RocketRide engine fails to start. This affects engine builds that predate [rocketride-org/rocketride-server#1725](https://github.com/rocketride-org/rocketride-server/pull/1725) -- not every fresh install going forward.
 
-**Root cause:** The engine ships pinned to `onnxruntime-gpu==1.20.1`, which no longer exists on PyPI. `pip install` for that pin fails, so the engine process never comes up.
+**Root cause:** Older engine builds ship pinned to `onnxruntime-gpu==1.20.1`, which no longer exists on PyPI -- it's the only version absent for that package. `pip install` for that pin fails, so the engine process never comes up. RocketRide already fixed this upstream in #1725, which bumped the five requirements files to `onnxruntime-gpu==1.22.0`.
 
-**Fix:** Patch the pin from `1.20.1` to `1.20.2` in the five requirements files under:
+**Fix:** Update RocketRide to a build that includes #1725. The patch below is a workaround only if you're pinned to an older engine and can't update yet: patch the pin from `1.20.1` to `1.20.2` (1.22.0 is what upstream chose, but 1.20.2 resolves too, since 1.20.1 is the only missing version) in the five requirements files under:
 ```
 %LOCALAPPDATA%\RocketRide\engine\
 ```
@@ -82,6 +82,8 @@ One row back, no truncation.
 %LOCALAPPDATA%\RocketRide\engine\cache\combined.txt
 ```
 so the engine rebuilds its combined dependency cache from the patched files.
+
+**Reference:** [rocketride-org/rocketride-server#1725](https://github.com/rocketride-org/rocketride-server/pull/1725); see also the follow-up [#1754](https://github.com/rocketride-org/rocketride-server/issues/1754) about a stale `constraints.lock` -- that issue doesn't affect already-running engines.
 
 ## 9. `${ROCKETRIDE_SLACK_WEBHOOK}` in agent instructions doesn't interpolate
 
