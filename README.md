@@ -48,6 +48,8 @@ An upstream team renames `customer_email` to `email` in `public.customers` (and 
 
 ### Architecture
 
+<p align="center"><img src="docs/images/sentinel-triage-canvas.png" alt="Sentinel Triage Agent pipeline in the RocketRide canvas" width="720"></p>
+
 ```mermaid
 flowchart LR
     A["dbt / Airflow failure event"] --> B["webhook (text lane)"]
@@ -62,6 +64,8 @@ flowchart LR
 ```
 
 A second, on-demand pipeline reads the incident reports the triage agent writes and answers questions about them:
+
+<p align="center"><img src="docs/images/sentinel-postmortem-canvas.png" alt="Sentinel Postmortem Agent pipeline in the RocketRide canvas" width="720"></p>
 
 ```mermaid
 flowchart LR
@@ -212,12 +216,11 @@ Honest framing matters more than a flashy demo:
 
 <div align="center">
 
-<!-- TODO: paste YouTube URL after recording, e.g. -->
-<!-- <a href="https://youtu.be/VIDEO_ID">
-  <img src="https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg" alt="Sentinel demo video" width="720">
-</a> -->
+<a href="https://youtu.be/A4dtzbJncB0">
+  <img src="https://img.youtube.com/vi/A4dtzbJncB0/maxresdefault.jpg" alt="Sentinel demo video" width="720">
+</a>
 
-**Watch the demo:** <!-- TODO: paste YouTube URL after recording -->
+**Watch the demo:** [https://youtu.be/A4dtzbJncB0](https://youtu.be/A4dtzbJncB0)
 
 </div>
 
