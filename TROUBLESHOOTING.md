@@ -6,9 +6,9 @@ Known walls hit while building this demo, and how to get past them on a fresh cl
 
 **Symptom:** POST to the triage webhook returns HTTP 200, `{"objectsRequested":1,"objectsCompleted":1}`, but the response has no `answers` and the trace shows the agent never ran.
 
-**Root cause:** The webhook source routes request bodies to output lanes by MIME type — `text/*` lands on the `text` lane, and there is no config field that routes a JSON body straight to `questions`. Posting `Content-Type: application/json` (or anything other than `text/*`) sends the body to a lane nothing downstream is wired to, so the object completes ingestion but never reaches the agent.
+**Root cause:** The webhook source routes request bodies to output lanes by MIME type -- `text/*` lands on the `text` lane, and there is no config field that routes a JSON body straight to `questions`. Posting `Content-Type: application/json` (or anything other than `text/*`) sends the body to a lane nothing downstream is wired to, so the object completes ingestion but never reaches the agent.
 
-**Fix:** `sentinel-triage.pipe` wires `webhook.text -> question -> agent.questions` (a `question` node, classType `text`, palette category TEXT, sits between the webhook and the agent). Callers must POST with `Content-Type: text/plain`. `scripts/fire_failure.py` does this — see below.
+**Fix:** `sentinel-triage.pipe` wires `webhook.text -> question -> agent.questions` (a `question` node, classType `text`, palette category TEXT, sits between the webhook and the agent). Callers must POST with `Content-Type: text/plain`. `scripts/fire_failure.py` does this -- see below.
 
 ## 2. Auth: Bearer header vs `?auth=` query param
 
@@ -16,7 +16,7 @@ Known walls hit while building this demo, and how to get past them on a fresh cl
 
 **Root cause:** Those earlier notes were wrong. Both work.
 
-**Fix:** Use `Authorization: Bearer <key>` (what `fire_failure.py` uses) or the `?auth=<key>` query param — the Endpoint Configuration dialog in the RocketRide canvas offers the query-param form directly, so it's supported, not a workaround.
+**Fix:** Use `Authorization: Bearer <key>` (what `fire_failure.py` uses) or the `?auth=<key>` query param -- the Endpoint Configuration dialog in the RocketRide canvas offers the query-param form directly, so it's supported, not a workaround.
 
 ## 3. "Can't read the file store without the SDK"
 
@@ -26,9 +26,9 @@ Known walls hit while building this demo, and how to get past them on a fresh cl
 
 **Fix:** The file store is a real directory on disk:
 ```
-C:\Users\HP\.rocketlib\store\users\local\files\
+%LOCALAPPDATA%\..\.rocketlib\store\users\local\files\
 ```
-Read it directly — `ls`, a text editor, whatever.
+(equivalently `~\.rocketlib\store\users\local\files\`). Read it directly -- `ls`, a text editor, whatever.
 
 ## 4. `postgres.get_schema` only shows 2 rows for a table with more columns
 
@@ -43,7 +43,7 @@ FROM information_schema.columns WHERE table_name = '<t>';
 ```
 One row back, no truncation.
 
-## 5. `raw.customers` — "relation does not exist" / empty reads
+## 5. `raw.customers` -- "relation does not exist" / empty reads
 
 **Symptom:** Agent's `postgres.*` calls against `raw.customers` return a persistent "table does not exist" warning, or reads come back empty even though the table was seeded.
 
@@ -53,11 +53,11 @@ One row back, no truncation.
 
 ## 6. Agent's root cause looks suspiciously like it just read the error message
 
-**Symptom:** The agent states the exact replacement column name without any `postgres.get_schema` call showing up in the trace for it — FR1.2 ("every column-existence claim must trace to a `get_schema` call") silently fails.
+**Symptom:** The agent states the exact replacement column name without any `postgres.get_schema` call showing up in the trace for it -- FR1.2 in PRD.md ("every column-existence claim must trace to a `get_schema` call") silently fails.
 
 **Root cause:** `demo/failure_payload.json` used to carry a Postgres `HINT` line naming the replacement column directly in the `error` field (`HINT: Perhaps you meant to reference the column "customers.email".`). The agent could answer from the payload alone, without inspecting live schema.
 
-**Fix:** The HINT line has been removed from `demo/failure_payload.json`. **Do not reintroduce it** — if you regenerate this payload from a real Postgres error, strip the `HINT:` clause before saving.
+**Fix:** The HINT line has been removed from `demo/failure_payload.json`. **Do not reintroduce it** -- if you regenerate this payload from a real Postgres error, strip the `HINT:` clause before saving.
 
 ## 7. Gemini: every model in the dropdown 404s or won't activate
 
@@ -65,11 +65,11 @@ One row back, no truncation.
 
 **Root cause:** The RocketRide model dropdown lists only retired or grandfathered Gemini models.
 
-**Fix:** Use the `custom` profile and set the model name yourself. Also note: the free tier caps at 20 requests/day, **per project, per model** — burning requests across multiple model names during testing exhausts the quota fast.
+**Fix:** Use the `custom` profile and set the model name yourself. Also note: the free tier caps at 20 requests/day, **per project, per model** -- burning requests across multiple model names during testing exhausts the quota fast.
 
 ## 8. Fresh install: RocketRide engine won't start
 
-**Symptom:** A clean install of the RocketRide engine fails to start. This is an upstream packaging bug — it will hit every fresh install until RocketRide re-pins the dependency.
+**Symptom:** A clean install of the RocketRide engine fails to start. This is an upstream packaging bug -- it will hit every fresh install until RocketRide re-pins the dependency.
 
 **Root cause:** The engine ships pinned to `onnxruntime-gpu==1.20.1`, which no longer exists on PyPI. `pip install` for that pin fails, so the engine process never comes up.
 
@@ -82,3 +82,17 @@ One row back, no truncation.
 %LOCALAPPDATA%\RocketRide\engine\cache\combined.txt
 ```
 so the engine rebuilds its combined dependency cache from the patched files.
+
+## 9. `${ROCKETRIDE_SLACK_WEBHOOK}` in agent instructions doesn't interpolate
+
+**Symptom:** The Slack notify step runs, but the POST 404s -- even though the Variables panel clearly holds a valid webhook URL.
+
+**Root cause:** `${VAR}` interpolation only fires on node CONFIG fields, not on agent instruction text. Putting `${ROCKETRIDE_SLACK_WEBHOOK}` inside a wave instruction string passes the literal, unexpanded `${ROCKETRIDE_SLACK_WEBHOOK}` text as the URL.
+
+**Fix:** Put the real URL (or the `${VAR}` reference) in the tool node's CONFIG field (e.g. `tool_http_request`'s `urlWhitelist`/target URL config), not in the agent's instruction prose. Instruction text should tell the agent *to* call the tool, not carry the interpolated value itself.
+
+## 10. PowerShell gotchas
+
+- **No `<` input redirection.** `docker exec -i ... < file.sql` fails with `The '<' operator is reserved for future use.` Use `Get-Content file.sql | docker exec -i ...` instead.
+- **No `&&`.** Chain with `;` (unconditional) or `A; if ($?) { B }` (conditional on success).
+- **`Set-Content -Encoding utf8` writes a BOM.** If the consumer of the file doesn't expect one (e.g. a shell script, a `.env` file), use `[System.IO.File]::WriteAllText($path, $content)` or `-Encoding utf8NoBOM` (PowerShell 6+) instead.
