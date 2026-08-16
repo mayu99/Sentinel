@@ -64,14 +64,14 @@ Present on both pipeline canvases, deliberately left unwired to the triage agent
 
 `postgres.get_schema`, `postgres.get_data`, `python.execute`, `fs.write`, `slack.http_request` — all confirmed resolving and executing correctly by successful runs. (Corrected from "unverified" — see Corrections §5 above.)
 
-### 3.7 Postgres result truncation
+### 3.7 `postgres.get_schema` is a startup-time snapshot, not live state
 
-Multi-row results from `postgres.get_schema` are truncated to a **two-row preview** before reaching the LLM. This is a tool-output limit, not a query problem, and it is easy to mistake for a schema-reading bug. Workaround: aggregate server-side to a single value —
+`get_schema` returns a schema snapshot reflected once at engine startup (`db_global_base.py:494`: `self.db_schema = self._getDatabaseSchema()`, never reassigned afterward). Confirmed against `packages/ai/src/ai/common/database/db_instance_base.py:180` — `get_schema` returns that cache with no truncation involved; the earlier "two-row preview" explanation was wrong. DDL applied after the engine starts (a column rename, for example) is invisible to `get_schema` until restart, and it is easy to mistake that for a schema-reading bug. Workaround: query live state directly, aggregated server-side to a single value —
 ```sql
 SELECT string_agg(column_name, ', ' ORDER BY ordinal_position)
 FROM information_schema.columns WHERE table_name = '<t>';
 ```
-One row back, no truncation. This is now baked into the agent's step-2 instructions, not left to be rediscovered per run.
+This reads current state, not the startup snapshot — verified by renaming a column with the engine running, no pipeline restart, and getting a report naming the new column. This is now baked into the agent's step-2 instructions, not left to be rediscovered per run.
 
 ### 3.8 Schema resolution — `public` vs `raw`
 

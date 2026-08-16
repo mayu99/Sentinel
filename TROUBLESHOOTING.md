@@ -30,18 +30,18 @@ Known walls hit while building this demo, and how to get past them on a fresh cl
 ```
 (equivalently `~\.rocketlib\store\users\local\files\`). Read it directly -- `ls`, a text editor, whatever.
 
-## 4. `postgres.get_schema` only shows 2 rows for a table with more columns
+## 4. `postgres.get_schema` doesn't see columns added or renamed after engine startup
 
-**Symptom:** The agent's schema inspection of a table with more than 2 columns comes back truncated, and root-cause reasoning based on "columns I can see" is wrong or incomplete.
+**Symptom:** The agent's schema inspection misses a column that was added or renamed after the RocketRide engine started, and root-cause reasoning based on that stale schema is wrong or incomplete.
 
-**Root cause:** Multi-row results from `postgres.get_schema` are truncated to a two-row preview before reaching the LLM. This is a tool-output limit, not a query problem.
+**Root cause:** `get_schema` returns a cached schema snapshot taken once at engine startup (`db_global_base.py:494`, `self.db_schema = self._getDatabaseSchema()`, never reassigned afterward) -- confirmed by reading `packages/ai/src/ai/common/database/db_instance_base.py:180`, where `get_schema` just returns that cache with no truncation involved. DDL applied after startup is invisible to `get_schema` until the engine restarts.
 
-**Fix:** Aggregate server-side to a single value instead of relying on the raw multi-row result:
+**Fix:** Query live schema state directly instead of relying on `get_schema`, aggregated server-side to one row so it's easy for the agent to consume:
 ```sql
 SELECT string_agg(column_name, ', ' ORDER BY ordinal_position)
 FROM information_schema.columns WHERE table_name = '<t>';
 ```
-One row back, no truncation.
+This reads current state, not the startup snapshot -- it's why Sentinel's diagnosis tracks a column rename made while the engine keeps running, with no restart.
 
 ## 5. `raw.customers` -- "relation does not exist" / empty reads
 
