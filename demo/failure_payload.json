@@ -16,6 +16,6 @@
     "03:12:41  2 of 3 SKIP relation analytics.fct_orders (depends on stg_customers)",
     "03:12:41  Done. PASS=1 WARN=0 ERROR=1 SKIP=1 TOTAL=3"
   ],
-  "model_sql": "select\n    customer_id,\n    full_name,\n    customer_email,\n    signup_source,\n    created_at\nfrom raw.customers",
-  "upstream_sources": ["raw.customers"]
+  "model_sql": "select\n    customer_id,\n    full_name,\n    customer_email,\n    signup_source,\n    created_at\nfrom public.customers",
+  "upstream_sources": ["public.customers"]
 }

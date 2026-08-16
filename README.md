@@ -8,7 +8,7 @@ Built by [Mayuresh Pandey](https://github.com/mayu99) · previous RocketRide bui
 
 - **Self-host is not optional for this problem.** Warehouse credentials and raw production logs cannot leave the network at most data teams. Sentinel runs on RocketRide's local runtime with `llm_ollama` (Llama 3.1 8B) as the default brain — zero bytes to a hosted LLM. Swap one node for `llm_anthropic`/`llm_openai` if your policy allows.
 - **The node graph is the architecture doc.** Both pipelines are portable JSON `.pipe` files — open them in the RocketRide VS Code canvas and the whole system is legible in one screen.
-- **Observability debugging observability.** Every triage run is traced node-by-node in the RocketRide dashboard, so you can watch the agent parse the failure, call `warehouse.get_schema`, and converge on the root cause — the incident *investigation* is itself fully auditable.
+- **Observability debugging observability.** Every triage run is traced node-by-node in the RocketRide dashboard, so you can watch the agent parse the failure, call `postgres.get_schema`, and converge on the root cause — the incident *investigation* is itself fully auditable.
 
 ## Architecture
 
@@ -27,7 +27,7 @@ webhook (dbt/Airflow failure event)
                      │ tool     Slack (tool_slack → #data-incidents, optional)
 ```
 
-The agent follows a strict triage protocol: parse the failure → fetch the *current* schema of the upstream tables → diagnose drift (every column claim must come from `warehouse.get_schema`, never from the payload alone) → propose the minimal SQL fix plus one guardrail → persist the report → notify Slack.
+The agent follows a strict triage protocol: parse the failure → fetch the *current* schema of the upstream tables → diagnose drift (every column claim must come from `postgres.get_schema`, never from the payload alone) → propose the minimal SQL fix plus one guardrail → persist the report → notify Slack.
 
 **`pipelines/sentinel-postmortem.pipe`** — on-demand
 
@@ -41,7 +41,7 @@ Ask it "digest of this week's incidents" and it synthesizes recurring root-cause
 
 ## Quickstart (demo)
 
-The demo ships a realistic broken state: an upstream team renamed `raw.customers.customer_email` → `email`, and the dbt staging model was never updated. Sentinel discovers this by inspecting the live schema — it is not told the answer.
+The demo ships a realistic broken state: an upstream team renamed `public.customers.customer_email` → `email`, and the dbt staging model was never updated. Sentinel discovers this by inspecting the live schema — it is not told the answer.
 
 1. **Start the demo warehouse** (Postgres 16 with the drifted schema pre-seeded):
    ```bash
@@ -52,12 +52,14 @@ The demo ships a realistic broken state: an upstream team renamed `raw.customers
 4. **Open and run the pipelines**: load `pipelines/sentinel-triage.pipe` in the RocketRide VS Code extension and start it. The Project Log prints the webhook URL.
 5. **Fire the failure**:
    ```bash
-   python scripts/fire_failure.py <webhook_url_from_project_log>
+   export SENTINEL_WEBHOOK_URL=<webhook_url_from_project_log>
+   export SENTINEL_API_KEY=<your RocketRide API key>
+   python scripts/fire_failure.py
    ```
-6. **Watch the dashboard**: the trace shows the agent reading the payload, calling `warehouse.get_schema('raw.customers')`, spotting that `customer_email` no longer exists (and that `email` does), and emitting the fix. The incident report lands in the file store under `incidents/`, and — with a token configured — a summary lands in `#data-incidents`.
+6. **Watch the dashboard**: the trace shows the agent reading the payload, calling `postgres.get_schema('public.customers')`, spotting that `customer_email` no longer exists (and that `email` does), and emitting the fix. The incident report lands in the file store under `incidents/`, and — with a token configured — a summary lands in `#data-incidents`.
 7. **Run the postmortem**: start `pipelines/sentinel-postmortem.pipe`, open its chat URL, and ask for a digest.
 
-Expected root cause, for reference: *"Upstream table `raw.customers` renamed `customer_email` to `email`; `stg_customers.sql` still selects `customer_email`, failing the view build and skipping downstream `fct_orders`."* The fix is a one-line model change plus a dbt source contract/test to catch the next rename before the nightly run does.
+Expected root cause, for reference: *"Upstream table `public.customers` renamed `customer_email` to `email`; `stg_customers.sql` still selects `customer_email`, failing the view build and skipping downstream `fct_orders`."* The fix is a one-line model change plus a dbt source contract/test to catch the next rename before the nightly run does.
 
 ## Repo layout
 

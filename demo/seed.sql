@@ -1,6 +1,6 @@
 -- Sentinel demo warehouse.
 -- Simulates the state of the warehouse AFTER an upstream team shipped a
--- breaking change: raw.customers used to have `customer_email`, but a
+-- breaking change: public.customers used to have `customer_email`, but a
 -- source-system migration renamed it to `email` (and added `email_verified`).
 -- The dbt model stg_customers.sql still selects `customer_email`, so the
 -- nightly run fails. Sentinel's job is to discover this by inspecting the
@@ -9,8 +9,8 @@
 CREATE SCHEMA IF NOT EXISTS raw;
 CREATE SCHEMA IF NOT EXISTS analytics;
 
-DROP TABLE IF EXISTS raw.customers;
-CREATE TABLE raw.customers (
+DROP TABLE IF EXISTS public.customers;
+CREATE TABLE public.customers (
     customer_id     BIGINT PRIMARY KEY,
     full_name       TEXT        NOT NULL,
     email           TEXT        NOT NULL,   -- was: customer_email (renamed 2026-08-07)
@@ -19,6 +19,12 @@ CREATE TABLE raw.customers (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
     _loaded_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Falsification test: proves the agent reads live schema instead of
+-- parroting the payload. Rename the column, re-run fire_failure.py, and
+-- the agent's root cause must follow the rename — not repeat "email".
+-- ALTER TABLE public.customers RENAME COLUMN email TO contact_email;
+-- ALTER TABLE public.customers RENAME COLUMN contact_email TO email;
 
 DROP TABLE IF EXISTS raw.orders;
 CREATE TABLE raw.orders (
@@ -30,7 +36,7 @@ CREATE TABLE raw.orders (
     _loaded_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-INSERT INTO raw.customers (customer_id, full_name, email, email_verified, signup_source, created_at) VALUES
+INSERT INTO public.customers (customer_id, full_name, email, email_verified, signup_source, created_at) VALUES
   (1, 'Ada Lovelace',    'ada@example.com',    TRUE,  'organic',  now() - interval '90 days'),
   (2, 'Grace Hopper',    'grace@example.com',  TRUE,  'referral', now() - interval '60 days'),
   (3, 'Edsger Dijkstra', 'edsger@example.com', FALSE, 'paid',     now() - interval '30 days'),

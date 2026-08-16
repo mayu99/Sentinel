@@ -91,10 +91,10 @@ Time estimates are rough sizes (S ≈ under 1 hr, M ≈ 1–3 hrs, L ≈ half a 
 ## 6. Functional requirements — per MUST-SHIP feature
 
 **Triage pipeline end-to-end**
-- FR1.1: Given the seeded drift (`raw.customers.customer_email` renamed to `email`, `stg_customers.sql` unchanged), a POST of `demo/failure_payload.json` to the triage webhook results in a completed agent run without manual intervention.
-- FR1.2: Every column-existence claim in the output must be traceable to a `warehouse.get_schema` call in that run's trace — this is already stated as a hard rule in the agent's instructions ("Never invent schema details"); it must hold up when someone actually reads the trace, not just when the instructions say so.
+- FR1.1: Given the seeded drift (`public.customers.customer_email` renamed to `email`, `stg_customers.sql` unchanged), a POST of `demo/failure_payload.json` to the triage webhook results in a completed agent run without manual intervention.
+- FR1.2: Every column-existence claim in the output must be traceable to a `postgres.get_schema` call in that run's trace — this is already stated as a hard rule in the agent's instructions ("Never invent schema details"); it must hold up when someone actually reads the trace, not just when the instructions say so.
 - FR1.3: The proposed fix is a concrete SQL diff (the exact line to change), not a general recommendation.
-- FR1.4: The proposed guardrail is a specific, nameable mechanism (e.g. "add a dbt source freshness/contract test on `raw.customers.email`"), not "be more careful."
+- FR1.4: The proposed guardrail is a specific, nameable mechanism (e.g. "add a dbt source freshness/contract test on `public.customers.email`"), not "be more careful."
 
 **Incident report written to disk**
 - FR2.1: File is written to `incidents/<UTC-ISO-timestamp>-<model>.md` (matches both agents' instructions verbatim — do not diverge from this naming, the postmortem agent's filter-by-timestamp-in-filename logic depends on it).
@@ -112,7 +112,7 @@ Time estimates are rough sizes (S ≈ under 1 hr, M ≈ 1–3 hrs, L ≈ half a 
 **Failure-state handling** — see §8, each state gets its own requirement there.
 
 **Webhook payload shape verification**
-- FR6.1: Run `scripts/fire_failure.py` against a started `sentinel-triage.pipe` and confirm in the trace that the agent actually received the full JSON payload as its question text (per the script's docstring claim) — not a truncated or mis-parsed version. This is a run-and-observe requirement, not a docs-verification one; the RocketRide docs don't specify the webhook HTTP body contract precisely enough to confirm from reading alone (see §10).
+- FR6.1: Run `scripts/fire_failure.py` against a started `sentinel-triage.pipe` and confirm in the trace that the agent actually received the full JSON payload as its question text (per the script's docstring claim: posted `text/plain`, routed by the webhook's `text` lane through the `question` node) — not a truncated or mis-parsed version. This is a run-and-observe requirement, not a docs-verification one; the RocketRide docs don't specify the webhook HTTP body contract precisely enough to confirm from reading alone (see §10).
 
 ## 7. Incident report schema
 
@@ -131,12 +131,12 @@ Design constraint: an 8B local model will drift from a rigid template under pros
 ## Root Cause
 
 <Single falsifiable sentence. Must name the specific object(s) and the specific
-change, e.g. "Upstream table raw.customers renamed customer_email to email;
+change, e.g. "Upstream table public.customers renamed customer_email to email;
 stg_customers.sql still selects customer_email.">
 
 ## Evidence
 
-<What warehouse.get_schema / warehouse.get_data actually returned that supports
+<What postgres.get_schema / postgres.get_data actually returned that supports
 the root cause above. This section exists so a human — or the postmortem
 agent — can verify the claim instead of trusting it blindly.>
 

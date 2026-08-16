@@ -1,0 +1,1 @@
+Use the slack http_request tool to POST {"text": "sentinel test"} to the configured webhook URL. Report the exact HTTP status code you receive. If the tool is unavailable or the URL is missing, say so explicitly.

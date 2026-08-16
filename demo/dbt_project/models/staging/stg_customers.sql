@@ -4,7 +4,7 @@
 select
     customer_id,
     full_name,
-    customer_email,          -- <- column no longer exists in raw.customers
+    customer_email,          -- <- column no longer exists in public.customers
     signup_source,
     created_at
-from raw.customers
+from public.customers
