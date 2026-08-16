@@ -12,8 +12,8 @@
       },
       "ui": {
         "position": {
-          "x": -70,
-          "y": 170
+          "x": -90,
+          "y": 140
         },
         "nodeType": "default",
         "formDataValid": true
@@ -43,8 +43,8 @@
       },
       "ui": {
         "position": {
-          "x": 260,
-          "y": 200
+          "x": 340,
+          "y": 110
         },
         "nodeType": "default",
         "formDataValid": true
@@ -52,7 +52,7 @@
       "input": [
         {
           "lane": "questions",
-          "from": "webhook_1"
+          "from": "question_1"
         }
       ]
     },
@@ -284,6 +284,32 @@
           "from": "db_postgres_1"
         }
       ]
+    },
+    {
+      "id": "question_1",
+      "provider": "question",
+      "name": "Question",
+      "config": {
+        "type": "question",
+        "name": "Question",
+        "parameters": {
+          "google": {}
+        }
+      },
+      "ui": {
+        "position": {
+          "x": 120,
+          "y": 120
+        },
+        "nodeType": "default",
+        "formDataValid": true
+      },
+      "input": [
+        {
+          "lane": "text",
+          "from": "webhook_1"
+        }
+      ]
     }
   ],
   "project_id": "72351f70-81f4-46a9-bb11-dbb107abc28e",
@@ -294,5 +320,5 @@
     10,
     10
   ],
-  "docRevision": 17
+  "docRevision": 26
 }
