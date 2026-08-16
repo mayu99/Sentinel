@@ -12,8 +12,8 @@
       },
       "ui": {
         "position": {
-          "x": -80,
-          "y": 130
+          "x": -70,
+          "y": 170
         },
         "nodeType": "default",
         "formDataValid": true
@@ -32,7 +32,7 @@
           "2. INSPECT SOURCE: Use postgres.get_schema to fetch the current schema of the upstream table(s) the failed model reads from. Use postgres.get_data with a SELECT to sample rows or check counts/freshness if relevant. (Method names are UNVERIFIED — the db_postgres schema only confirms the 'postgres' prefix, not the method suffixes. Confirm against the actual tool-call schema on first run.)",
           "3. DIAGNOSE DRIFT: Compare what the model's SQL expects (columns named in the error and log excerpt) against the live schema. Use python.execute for any diffing, parsing, or date math. State the root cause as a single falsifiable sentence, e.g. 'Upstream table raw.customers renamed customer_email to email; stg_customers.sql still selects customer_email.'",
           "4. PROPOSE FIX: Write the minimal concrete fix — the exact SQL change or config change — and one guardrail to prevent recurrence (e.g. a dbt source freshness test or a schema contract).",
-          "5. RECORD: Write the full incident report as markdown to the file store at incidents/<UTC timestamp>-<model>.md using fs.write. The filename must contain only letters, digits, hyphens, and underscores — strip all colons from the timestamp (write 2026-08-09T031241Z, not 2026-08-09T03:12:41Z).",
+          "5. RECORD: Write the full incident report as markdown to the file store at incidents/<UTC timestamp>-<model>.md using fs.write.",
           "6. NOTIFY: If the Slack webhook tool is available, POST a JSON payload ({\"text\": \"<summary>\"}) containing a concise incident summary (root cause + fix, under 120 words) to the Slack incoming webhook URL using slack.http_request (POST). If the tool is not available, skip without failing.",
           "Always finish by returning the incident report. Never invent schema details — every column claim must come from postgres.get_schema output. If you cannot determine the root cause, say so and list what you ruled out."
         ],
@@ -43,8 +43,8 @@
       },
       "ui": {
         "position": {
-          "x": 340,
-          "y": 110
+          "x": 260,
+          "y": 200
         },
         "nodeType": "default",
         "formDataValid": true
@@ -52,7 +52,7 @@
       "input": [
         {
           "lane": "questions",
-          "from": "question_1"
+          "from": "webhook_1"
         }
       ]
     },
@@ -109,7 +109,7 @@
           "db_description": "Sentinel data warehouse — upstream source tables read by the dbt/Airflow models under triage.",
           "host": "${ROCKETRIDE_PG_HOST}",
           "max_attempts": 5,
-          "table": "customers",
+          "table": "raw.customers",
           "user": "${ROCKETRIDE_PG_USER}",
           "password": "${ROCKETRIDE_PG_PASSWORD}"
         },
@@ -256,25 +256,13 @@
       "provider": "llm_gemini",
       "name": "Gemini",
       "config": {
-        "profile": "gemini-3_1-flash-lite-preview",
+        "profile": "gemini-2_5-flash",
         "1-pro-preview": {},
         "name": "Gemini",
         "parameters": {
           "google": {}
         },
         "5-flash": {
-          "apikey": "${ROCKETRIDE_GEMINI_KEY}"
-        },
-        "gemini-2_0-flash": {
-          "apikey": "${ROCKETRIDE_GEMINI_KEY}"
-        },
-        "gemini-3-flash-preview": {
-          "apikey": "${ROCKETRIDE_GEMINI_KEY}"
-        },
-        "5-flash-lite": {
-          "apikey": "${ROCKETRIDE_GEMINI_KEY}"
-        },
-        "1-flash-lite-preview": {
           "apikey": "${ROCKETRIDE_GEMINI_KEY}"
         }
       },
@@ -296,32 +284,6 @@
           "from": "db_postgres_1"
         }
       ]
-    },
-    {
-      "id": "question_1",
-      "provider": "question",
-      "name": "Question",
-      "config": {
-        "type": "question",
-        "name": "Question",
-        "parameters": {
-          "google": {}
-        }
-      },
-      "ui": {
-        "position": {
-          "x": 120,
-          "y": 120
-        },
-        "nodeType": "default",
-        "formDataValid": true
-      },
-      "input": [
-        {
-          "lane": "text",
-          "from": "webhook_1"
-        }
-      ]
     }
   ],
   "project_id": "72351f70-81f4-46a9-bb11-dbb107abc28e",
@@ -332,5 +294,5 @@
     10,
     10
   ],
-  "docRevision": 36
+  "docRevision": 17
 }
