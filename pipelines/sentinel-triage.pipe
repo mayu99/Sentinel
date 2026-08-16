@@ -33,7 +33,7 @@
           "3. DIAGNOSE DRIFT: Compare what the model's SQL expects (columns named in the error and log excerpt) against the live schema. Use python.execute for any diffing, parsing, or date math. State the root cause as a single falsifiable sentence, e.g. 'Upstream table raw.customers renamed customer_email to email; stg_customers.sql still selects customer_email.' The python.execute tool requires a code argument containing the script to run — never call it with an empty or missing code.",
           "4. PROPOSE FIX: Write the minimal concrete fix — the exact SQL change or config change — and one guardrail to prevent recurrence (e.g. a dbt source freshness test or a schema contract). The guardrail must catch a missing or renamed column specifically — a dbt model contract or column-level schema enforcement, not a not_null/unique data test.",
           "5. RECORD: Write the full incident report as markdown to the file store at incidents/<UTC timestamp>-<model>.md using fs.write. The filename must contain only letters, digits, hyphens, and underscores — strip all colons from the timestamp (write 2026-08-09T031241Z, not 2026-08-09T03:12:41Z). The report must include an \"Evidence\" section listing the actual columns returned by postgres.get_schema. Do not state a root cause that isn't supported by that output. The fs.write tool requires a path argument containing the full destination filename — never call it with an empty or missing path.",
-          "6. NOTIFY: POST a JSON payload {\"text\": \"<summary>\"} containing a concise incident summary (root cause + fix, under 120 words) to https://webhook.site/c9b3f4ae-4b60-4c73-84af-ef6976514586 using slack.http_request (POST). Report the HTTP status you receive. The http_request tool requires a method argument — always pass method: \"POST\" explicitly.",
+          "6. NOTIFY: POST a JSON payload {\"text\": \"<summary>\"} containing a concise incident summary (root cause + fix, under 120 words) to https://hooks.slack.com/services/YOUR/WEBHOOK/URL using slack.http_request (POST). Report the HTTP status you receive. The http_request tool requires a method argument — always pass method: \"POST\" explicitly.",
           "Always finish by returning the incident report. Never invent schema details — every column claim must come from postgres.get_schema output. If you cannot determine the root cause, say so and list what you ruled out."
         ],
         "max_waves": 20,
@@ -338,5 +338,5 @@
     10,
     10
   ],
-  "docRevision": 45
+  "docRevision": 46
 }
